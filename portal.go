@@ -965,6 +965,7 @@ func (portal *Portal) handleDiscordMessageDeleteBulk(user *User, messages []stri
 func (portal *Portal) redactAllParts(intent *appservice.IntentAPI, msgID string) (lastResp id.EventID) {
 	log := portal.log.With().Logger()
 	log.Debug().Msg("Intentionally skipped Message Deletion.")
+	return
 }
 
 func (portal *Portal) handleDiscordTyping(evt *discordgo.TypingStart) {
