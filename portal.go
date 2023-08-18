@@ -963,20 +963,8 @@ func (portal *Portal) handleDiscordMessageDeleteBulk(user *User, messages []stri
 }
 
 func (portal *Portal) redactAllParts(intent *appservice.IntentAPI, msgID string) (lastResp id.EventID) {
-	existing := portal.bridge.DB.Message.GetByDiscordID(portal.Key, msgID)
-	for _, dbMsg := range existing {
-		resp, err := intent.RedactEvent(portal.MXID, dbMsg.MXID)
-		if err != nil {
-			portal.log.Err(err).
-				Str("message_id", msgID).
-				Str("event_id", dbMsg.MXID.String()).
-				Msg("Failed to redact Matrix message")
-		} else if resp != nil && resp.EventID != "" {
-			lastResp = resp.EventID
-		}
-		dbMsg.Delete()
-	}
-	return
+	log := portal.log.With().Logger()
+	log.Debug().Msg("Intentionally skipped Message Deletion.")
 }
 
 func (portal *Portal) handleDiscordTyping(evt *discordgo.TypingStart) {
