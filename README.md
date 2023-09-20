@@ -17,3 +17,9 @@ contains a general overview of what is supported by the bridge.
 
 ## Discussion
 Matrix room: [#discord:maunium.net](https://matrix.to/#/#discord:maunium.net)
+
+## Workflow
+
+	doas docker build -t discord:$TAG .
+	doas docker tag discord:$TAG noahvogt/mautrix-discord:$TAG
+	doas docker push noahvogt/mautrix-discord:$TAG
