@@ -1103,7 +1103,7 @@ func (portal *Portal) getEvent(mxid id.EventID) (*event.Event, error) {
 	if evt.Type == event.EventEncrypted {
 		decryptedEvt, err := portal.bridge.Crypto.Decrypt(evt)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to decrypt event: %w", err)
 		} else {
 			evt = decryptedEvt
 		}
@@ -1399,13 +1399,9 @@ func cutBody(body string) string {
 }
 
 func (portal *Portal) convertReplyMessageToEmbed(eventID id.EventID, url string) (*discordgo.MessageEmbed, error) {
-	evt, err := portal.MainIntent().GetEvent(portal.MXID, eventID)
+	evt, err := portal.getEvent(eventID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch event: %w", err)
-	}
-	err = evt.Content.ParseRaw(evt.Type)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse event content: %w", err)
+		return nil, fmt.Errorf("failed to get reply target event: %w", err)
 	}
 	content, ok := evt.Content.Parsed.(*event.MessageEventContent)
 	if !ok {
@@ -1825,13 +1821,15 @@ func (portal *Portal) handleMatrixReaction(sender *User, evt *event.Event) {
 	emojiID := reaction.RelatesTo.Key
 	if strings.HasPrefix(emojiID, "mxc://") {
 		uri, _ := id.ParseContentURI(emojiID)
-		emojiFile := portal.bridge.DB.File.GetEmojiByMXC(uri)
-		if emojiFile == nil || emojiFile.ID == "" || emojiFile.EmojiName == "" {
+		emojiInfo := portal.bridge.DMA.GetEmojiInfo(uri)
+		if emojiInfo != nil {
+			emojiID = fmt.Sprintf("%s:%d", emojiInfo.Name, emojiInfo.EmojiID)
+		} else if emojiFile := portal.bridge.DB.File.GetEmojiByMXC(uri); emojiFile != nil && emojiFile.ID != "" && emojiFile.EmojiName != "" {
+			emojiID = fmt.Sprintf("%s:%s", emojiFile.EmojiName, emojiFile.ID)
+		} else {
 			go portal.sendMessageMetrics(evt, fmt.Errorf("%w %s", errUnknownEmoji, emojiID), "Ignoring")
 			return
 		}
-
-		emojiID = fmt.Sprintf("%s:%s", emojiFile.EmojiName, emojiFile.ID)
 	} else {
 		emojiID = variationselector.FullyQualify(emojiID)
 	}

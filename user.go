@@ -100,7 +100,7 @@ func discordToZeroLevel(level int) zerolog.Level {
 
 func init() {
 	discordgo.Logger = func(msgL, caller int, format string, a ...interface{}) {
-		discordLog.WithLevel(discordToZeroLevel(msgL)).Caller(caller+1).Msgf(strings.TrimSpace(format), a...)
+		discordLog.WithLevel(discordToZeroLevel(msgL)).Caller(caller+1).Msgf(strings.TrimSpace(format), a...) // zerolog-allow-msgf
 	}
 }
 
@@ -193,6 +193,12 @@ func (br *DiscordBridge) GetCachedUserByID(id string) *User {
 	br.usersLock.Lock()
 	defer br.usersLock.Unlock()
 	return br.usersByID[id]
+}
+
+func (br *DiscordBridge) GetCachedUserByMXID(userID id.UserID) *User {
+	br.usersLock.Lock()
+	defer br.usersLock.Unlock()
+	return br.usersByMXID[userID]
 }
 
 func (br *DiscordBridge) NewUser(dbUser *database.User) *User {
@@ -548,7 +554,7 @@ func (user *User) Connect() error {
 	}
 	userDiscordLog := user.log.With().Str("component", "discordgo").Logger()
 	session.Logger = func(msgL, caller int, format string, a ...interface{}) {
-		userDiscordLog.WithLevel(discordToZeroLevel(msgL)).Caller(caller+1).Msgf(strings.TrimSpace(format), a...)
+		userDiscordLog.WithLevel(discordToZeroLevel(msgL)).Caller(caller+1).Msgf(strings.TrimSpace(format), a...) // zerolog-allow-msgf
 	}
 	if !session.IsUser {
 		session.Identify.Intents = BotIntents

@@ -1,3 +1,14 @@
+# v0.7.0 (unreleased)
+
+* Bumped minimum Go version to 1.21.
+* Changed how direct media access works to make it compatible with Discord's
+  signed URL requirement. The new system must be enabled manually, see
+  [docs](https://docs.mau.fi/bridges/go/discord/direct-media.html) for info.
+
+# v0.6.5 (2024-01-16)
+
+* Fixed adding reply embed to webhook sends if the Matrix room is encrypted.
+
 # v0.6.4 (2023-11-16)
 
 * Changed error messages to be sent in a thread if the errored message was in
